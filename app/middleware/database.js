@@ -1,20 +1,18 @@
-const sql = require('mysql2')
+const sql = require('mysql2/promise')
 require('dotenv').config()
-const message = require('../utils/message')
+// const message = require('../utils/message')
 
-let connection = sql.createConnection({
+let connection = sql.createPool({
     host: process.env.HOST,
     user:process.env.USER,
     password:process.env.PASSWORD,
     database:process.env.DATABASE
 })
 
-connection.connect(function (error) {
-    if (error) {
-        throw new Error('Error is There');
-    }else{
-        console.log(message.DATABASE_CONNECTION);
-    }
+connection.query('SELECT 1').then(()=>{
+    console.log('db is conected')
+}).catch((e)=>{
+    console.log(`Error in db connection ${e}`)
 })
 
 module.exports = connection
