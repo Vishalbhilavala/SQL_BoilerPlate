@@ -1,6 +1,7 @@
 const sql = require('mysql2')
 require('dotenv').config()
 const message = require('../utils/message')
+const logger = require('../services/logger')
 
 let connection = sql.createConnection({
     host: process.env.HOST,
@@ -11,9 +12,9 @@ let connection = sql.createConnection({
 
 connection.connect(function (error) {
     if (error) {
-        throw new Error('Error is There');
+        logger.error('Error is There');
     }else{
-        console.log(message.DATABASE_CONNECTION);
+        logger.info(message.DATABASE_CONNECTION);
     }
 })
 

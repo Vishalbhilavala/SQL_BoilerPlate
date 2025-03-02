@@ -7,6 +7,7 @@ require('dotenv').config()
 const helmet = require('helmet')
 const path = require('path')
 const cors = require('cors')
+const logger = require('./app/services/logger')
 
 //public path
 app.use(express.static(path.join(__dirname, 'app', 'public')))
@@ -23,5 +24,5 @@ app.use('/', require('./app/route/routes'))
 //Server Connection
 const port = process.env.PORT || 3030
 app.listen(port, ()=>{
-    console.log(`Server is Connected On Port: ${port}`)
+    logger.info(`Server is Connected On Port: ${port}`)
 })
