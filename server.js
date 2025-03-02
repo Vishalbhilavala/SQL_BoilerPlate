@@ -2,16 +2,23 @@ const express = require('express');
 const app = express();
 
 require('dotenv').config()
-const UserRouter = require('./app/route/routes/user')
+
+
+const helmet = require('helmet')
+const path = require('path')
+const cors = require('cors')
+
+//public path
+app.use(express.static(path.join(__dirname, 'app', 'public')))
 
 //Middleware
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
-
-const db = require('./app/middleware/database')
+app.use(helmet())
+app.use(cors())
 
 //Routes Api
-app.use('/api/users', UserRouter)
+app.use('/', require('./app/route/routes'))
 
 //Server Connection
 const port = process.env.PORT || 3030
