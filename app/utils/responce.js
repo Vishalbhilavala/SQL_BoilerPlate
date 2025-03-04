@@ -7,6 +7,7 @@ class GeneralResponse {
     this.message = message;
     this.result = result;
   }
+  
 }
 
 module.exports = {

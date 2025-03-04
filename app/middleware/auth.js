@@ -17,7 +17,7 @@ const auth = (req, res, next) =>{
         next()
     } catch (error) {
         console.log(error)
-        return res.status(404).send({success: false, message:'Token not valid'})
+        return res.status(401).send({success: false, message:'Token not valid'})
     }
 }
 

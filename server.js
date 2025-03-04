@@ -2,19 +2,27 @@ const express = require('express');
 const app = express();
 
 require('dotenv').config()
-const UserRouter = require('./app/route/routes/user')
+
+
+const helmet = require('helmet')
+const path = require('path')
+const cors = require('cors')
+const logger = require('./app/services/logger')
+
+//public path
+app.use(express.static(path.join(__dirname, 'app', 'public')))
 
 //Middleware
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
-
-const db = require('./app/middleware/database')
+app.use(helmet())
+app.use(cors())
 
 //Routes Api
-app.use('/api/users', UserRouter)
+app.use('/', require('./app/route/routes'))
 
 //Server Connection
 const port = process.env.PORT || 3030
 app.listen(port, ()=>{
-    console.log(`Server is Connected On Port: ${port}`)
+    logger.info(`Server is Connected On Port: ${port}`)
 })

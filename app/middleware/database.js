@@ -1,19 +1,22 @@
-const sql = require('mysql2/promise')
-require('dotenv').config()
-const message = require('../utils/message')
+const mysql = require('mysql2/promise');
+require('dotenv').config();
+const logger = require('../../app/services/logger');
+const { StatusCodes } = require('http-status-codes');
+const responseStatus = require('../utils/enum');
+const { error } = require('winston');
 
-let connection = sql.createPool({
-    host: process.env.HOST,
-    user:process.env.USER,
-    password:process.env.PASSWORD,
-    database:process.env.DATABASE
+const pool = mysql.createPool({
+  connectionLimit: 10,
+  host: process.env.HOST,
+  user: process.env.USER,
+  password: process.env.PASSWORD,
+  database: process.env.DATABASE
+});
+
+pool.query('SELECT 1').then(()=>{
+  logger.info(`DataBase is Connected On : ${process.env.DATABASE}`)
+}).catch((error)=>{
+  logger.error(`Error in DataBase Connection: ${error}`)
 })
 
-connection.query('SELECT 1').then(()=>{
-    console.log(message.DATABASE_CONNECTION,)
-
-}).catch((e)=>{
-    console.log( message.DATABASE_CONNECTION_ERROR, e )
-})
-
-module.exports = connection
+module.exports = pool;

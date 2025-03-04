@@ -1,14 +1,14 @@
 const express = require('express');
 let route = express.Router();
 const {auth} = require('../../middleware/auth')
-let {register, login, UsersData, ViewuserById, ViewByPagination, ResetPasswordViaEmail, Sent_Otp} = require('../../controller/user.controller')
+const userRouter = require('../../controller/user.controller')
 
-route.get('/alldata', UsersData)
-route.get('/data/',auth, ViewuserById)
-route.post('/pagination', ViewByPagination)
-route.post('/register', register)
-route.post('/login', login)
-route.post('/sent-otp',auth, Sent_Otp)
-route.post('/setpassword', auth, ResetPasswordViaEmail)
+route.post('/registration', userRouter.registration)
+route.post('/login', userRouter.login)
+route.get('/getlistOfUser', userRouter.getListOfUser)
+route.get('/viewProfile',auth, userRouter.viewProfile)
+route.post('/verifyEmail', userRouter.verifyEmail)
+route.post('/verifyotp', userRouter.verifyOTP)
+route.post('/setnewpassword', userRouter.forgotPassword)
 
 module.exports = route
