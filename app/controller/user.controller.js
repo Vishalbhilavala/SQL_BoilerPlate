@@ -146,18 +146,34 @@ module.exports = {
 
   getListOfUser: async (req, res) => {
     try {
-      let { page, data, sortBy, orderBy } = req.body;
-      const [user] = await db.query('SELECT * FROM user');
+      let { page, data, sortBy, orderBy = "asc", search } = req.body;
+      const [user] = await db.query('SELECT * FROM user');  
+
+      let filteredUser = user;
+
+      if (search) {
+        const searchLower = search.toLowerCase();
+        filteredUser = user.filter(
+          (user_data) =>
+            user_data.name.toLowerCase().includes(searchLower) || 
+            user_data.email.toLowerCase().includes(searchLower)
+        );
+      }
+
+      if (sortBy && filteredUser.length > 0) {
+        filteredUser.sort((a, b) => {
+          if (orderBy === "desc") {
+            return b[sortBy] > a[sortBy] ? 1 : -1;
+          } else {
+            return a[sortBy] > b[sortBy] ? 1 : -1;
+          }
+        });
+      }
 
       let StartIndex = (page - 1) * data;
       let EndIndex = StartIndex + data;
 
-      const show = user.slice(StartIndex, EndIndex);
-
-      if (sortBy === 'id') {
-        let isdescending = show[0].id > show[show.length - 1].id;
-        show.sort((a, b) => (isdescending ? a.id - b.id : b.id - a.id));
-      }
+      const show = filteredUser.slice(StartIndex, EndIndex);
 
       return res.status(200).json({
         statusCode:StatusCodes.OK,
