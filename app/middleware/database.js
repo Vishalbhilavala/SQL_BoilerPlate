@@ -1,9 +1,7 @@
 const mysql = require('mysql2/promise');
 require('dotenv').config();
 const logger = require('../../app/services/logger');
-const { StatusCodes } = require('http-status-codes');
-const responseStatus = require('../utils/enum');
-const { error } = require('winston');
+
 
 const pool = mysql.createPool({
   connectionLimit: 10,
