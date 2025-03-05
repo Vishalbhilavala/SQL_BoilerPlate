@@ -6,10 +6,8 @@ const create_portfolio_validate = Joi.object({
     'any.required': 'category ID is required.',
   }),
   
-  product_name: Joi.string().min(1).max(100).required().messages({
+  product_name: Joi.string().required().messages({
     'string.base': 'product name must be a string.',
-    'string.min': 'product name must be at least 1 characters.',
-    'string.max': 'product name must be less than or equal to 100 characters.',
     'any.required': 'product name is required.',
   }),
 

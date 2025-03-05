@@ -2,14 +2,14 @@ const express = require('express');
 let route = express.Router();
 const { upload } = require('../../middleware/multer-auth')
 
-const PortfolioRouter = require('../../controller/portfolio.constroller')
+const portfolioRouter = require('../../controller/portfolio.constroller')
 
-route.post('/portfoliocreate', PortfolioRouter.createPortfolio)
-route.post('/commanfileupload', upload.single('photo'), PortfolioRouter.commanFileUpload)
-route.get('/getlistofportfolio', PortfolioRouter.getListOfPortfolio)
-route.post('/portfoliobyid/:id', PortfolioRouter.listOfPortfolioByID)
-route.put('/updateportfolio', PortfolioRouter.updatePortfolio)
-route.delete('/deleteportfolio', PortfolioRouter.deletePortfolio)
+route.post('/createPortfolio', portfolioRouter.createPortfolio)
+route.post('/commanFileUpload', upload.single('photo'), portfolioRouter.commanFileUpload)
+route.get('/getListOfPortfolio', portfolioRouter.getListOfPortfolio)
+route.post('/viewPortfolio/:id', portfolioRouter.viewPortfolio)
+route.put('/updatePortfolio', portfolioRouter.updatePortfolio)
+route.delete('/deletePortfolio', portfolioRouter.deletePortfolio)
 
 
 module.exports = route

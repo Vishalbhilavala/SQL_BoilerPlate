@@ -1,11 +1,11 @@
 const router = require('express').Router()
-const UserRouter = require('./routes/user')
-const CategoryRouter = require('./routes/category.route')
-const PortfolioRouter = require('./routes/portfolio.route')
+const userRouter = require('./routes/user')
+const categoryRouter = require('./routes/category.route')
+const portfolioRouter = require('./routes/portfolio.route')
 
 
-router.use('/api/users', UserRouter)
-router.use('/api/category', CategoryRouter)
-router.use('/api/portfolio', PortfolioRouter)
+router.use('/api/users', userRouter)
+router.use('/api/category', categoryRouter)
+router.use('/api/portfolio', portfolioRouter)
 
 module.exports = router
