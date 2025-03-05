@@ -1,13 +1,19 @@
 const nodemailer = require('nodemailer');
-const db = require('../middleware/database')
-// const bcrypt = require('bcryptjs');
+const db = require('../middleware/database');
+const logger = require('../services/logger');
+require('dotenv').config()
+
+const service = process.env.SERVICE;
+const user = process.env.USER_EMAIL;
+const pass = process.env.PASS
 
 const transporter = nodemailer.createTransport({
-    service: 'gmail',
+    service: service,
     auth: {
-      user: 'vishalbhilavala@gmail.com',
-      pass: 'wolh arlq uedi mjey'
+      user: user,
+      pass: pass
     },
+
     tls: {
       rejectUnauthorized: false
     }
@@ -18,27 +24,30 @@ function generateOTP() {
 }
 
 async function sendOTPToEmail(email) {
+
     const otp = generateOTP();
-    const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes set
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
 
     const query = 'INSERT INTO otp_verifications (email, otp, expires_at) VALUES (?, ?, ?)';
     await db.execute(query, [email, otp, expiresAt], (err, result) => {
         if (err) {
-            console.error(err);
+            logger.error(err);
             return; 
         }
     })
 
+    const from = process.env.FROM
+    const subject = process.env.SUBJECT
+    const text = process.env.TEXT
+    const html = process.env.HTML
+    
     const info = await transporter.sendMail({
-        from: '"vishal bhilavala" <vishalbhilavala@gmail.com>',
+        from: from,
         to: email,
-        subject: "Set New Password ✔",
-        text: "We Send a otp Please confirm its you",
-        html: `Verify Using This Otp : <b>${otp}</b>
-        <p><b>Note: </b>Otp will expire in 15 Minutes</p>`,
+        subject: subject,
+        text: text,
+        html: html,
       });
-
-      // console.log(info)
 }  
 
  module.exports = sendOTPToEmail;

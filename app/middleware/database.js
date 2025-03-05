@@ -1,6 +1,7 @@
 const mysql = require('mysql2/promise');
 require('dotenv').config();
 const logger = require('../../app/services/logger');
+const message = require('../utils/message')
 
 
 const pool = mysql.createPool({
@@ -12,9 +13,9 @@ const pool = mysql.createPool({
 });
 
 pool.query('SELECT 1').then(()=>{
-  logger.info(`DataBase is Connected On : ${process.env.DATABASE}`)
+  logger.info(message.DATABASE_CONNECTION)
 }).catch((error)=>{
-  logger.error(`Error in DataBase Connection: ${error}`)
+  logger.error(message.DATABASE_CONNECTION_ERROR, error)
 })
 
 module.exports = pool;

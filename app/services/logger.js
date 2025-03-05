@@ -1,6 +1,6 @@
 const winston = require('winston')
 const customFormat = winston.format.printf(({ level, message}) => {
-    // Replace "undefined" with a custom value
+    
     if (message.includes("undefined")) {
       message = message.replace("undefined", "N/A");
     }

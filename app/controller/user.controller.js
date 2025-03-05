@@ -13,17 +13,19 @@ const {
   login_validate,
   verifyotp_validate,
   forgotPassword_validate,
+  update_validate,
 } = require('../validation/uservalidate');
 
 module.exports = {
   registration: async (req, res, next) => {
+
     try {
       const { name, email, password } = req.body;
 
       const { error } = registration_validate.validate(req.body);
 
       if (error) {
-        logger.error('Error from registration validate');
+        logger.error(error.message);
 
         return res.status(200).json({
           statusCode: StatusCodes.BAD_REQUEST,
@@ -38,11 +40,13 @@ module.exports = {
       );
 
       if (user_existed.length > 0) {
-        logger.error(`User already exists.`);
+
+        logger.error(`${message.ALL_READYEXIST}`);
+
         return res.status(200).json({
           statusCode: StatusCodes.BAD_REQUEST,
           status: responseStatus.RESPONSE_ERROR,
-          message: 'User already exist',
+          message: message.ALL_READYEXIST,
           user: user_existed,
         });
       }
@@ -54,14 +58,19 @@ module.exports = {
         'INSERT INTO user (name, email, password) VALUES(?, ?, ?)',
         [name, email, hashpass]
       );
-      logger.info('You are registred successfully.');
+
+      logger.info(message.REGISTER_SUCCESSFULLY);
+
       return res.json({
         statusCode: StatusCodes.CREATED,
         status: responseStatus.RESPONSE_SUCCESS,
-        message: 'You are registred successfully.',
+        message: message.REGISTER_SUCCESSFULLY,
       });
+
     } catch (error) {
-      logger.error('Unexpected error:', error.message);
+
+      logger.error(error.message);
+
       return res
         .status(200)
         .json({
@@ -74,11 +83,13 @@ module.exports = {
 
   login: async (req, res) => {
     try {
+
       const { email, password } = req.body;
 
       const { error } = login_validate.validate(req.body);
+
       if (error) {
-        logger.error('all required.');
+        logger.error(error.message);
 
         return res.status(200).json({
           statusCode: StatusCodes.BAD_REQUEST,
@@ -90,15 +101,25 @@ module.exports = {
       const [user] = await db.query('SELECT * FROM user WHERE email=? ', [
         email,
       ]);
+
       if (user.length === 0) {
-        throw 'User not found';
+
+        return res.json({
+          statusCode: StatusCodes.UNAUTHORIZED,
+          status: responseStatus.RESPONSE_ERROR,
+          message: message.DATA_NOT_FOUND_EMAIL,
+        });
       }
+
       const passvalid = await bcrypt.compare(password, user[0].password);
+
       if (!passvalid) {
+
         return res
           .status(400)
-          .send({ success: false, message: 'Invalid Password Provided' });
+          .send({ success: false, message: message.INVALID_PASSWORD });
       }
+
       const Jwt_Secret = process.env.JWT_SECRET;
       const token = jwt.sign(
         { id: user[0].id, email: user[0].email },
@@ -110,42 +131,63 @@ module.exports = {
 
       return res
         .status(200)
-        .send({ success: true, message: 'Login SuccessFully', token });
+        .send({ success: true, message: message.LOGIN_SUCCESSFULLY, token });
+
     } catch (error) {
-      console.log(error);
+
+      logger.error(error.message)
+
       return res
-        .status(500)
-        .send({ success: false, message: 'Error in Server', error });
+        .status(200)
+        .json({
+          statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+          status: responseStatus.RESPONSE_ERROR,
+          error: error.message,
+        });
     }
   },
 
   viewProfile: async (req, res) => {
     try {
+
       const use_id = req.user_data.id;
       const [user] = await db.query('SELECT * FROM user WHERE id = ?', [
         use_id,
       ]);
+
       if (user.length === 0) {
+
         return res.json({
           statusCode: StatusCodes.UNAUTHORIZED,
           status: responseStatus.RESPONSE_ERROR,
-          message: 'User Not Found With Provided ID',
+          message: message.DATA_NOT_FOUND_ID,
         });
       }
+
       return res.status(200).json({
         statusCode: StatusCodes.OK,
         status: responseStatus.RESPONSE_SUCCESS,
-        message: 'User Match With ID',
+        message: message.SUCCESSFULLY,
         user
       });
+
     } catch (error) {
-      console.log(error);
-      return res.status(500).send({ success: false, message: 'Error', error });
+
+      logger.error(error.message)
+
+      return res
+        .status(200)
+        .json({
+          statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+          status: responseStatus.RESPONSE_ERROR,
+          error: error.message,
+        });
     }
   },
 
   getListOfUser: async (req, res) => {
     try {
+
       let { page, data, sortBy, orderBy = "asc", search } = req.body;
       const [user] = await db.query('SELECT * FROM user');  
 
@@ -178,130 +220,100 @@ module.exports = {
       return res.status(200).json({
         statusCode:StatusCodes.OK,
         status: responseStatus.RESPONSE_SUCCESS,
-        message:"List Of all User's",
+        message: message.SUCCESSFULLY,
         user: show, 
       });
+
     } catch (error) {
-      console.log(error);
+
+      logger.error(error.message)
+
       return res
-        .status(500)
-        .send({
-          success: false,
-          message: 'Server Error',
+        .status(200)
+        .json({
+          statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+          status: responseStatus.RESPONSE_ERROR,
           error: error.message,
         });
     }
   },
 
-  verifyEmail: async (req, res) => {
+  updateProfie: async (req, res) =>{
     try {
-      const { email } = req.body;
-
-      const [user] = await db.query(' SELECT * FROM user WHERE email=?', [
-        email,
-      ]);
-
-      if (user.length === 0) {
-        return res.status(200).json({
-          statusCode: StatusCodes.NOT_FOUND,
-          status: responseStatus.RESPONSE_ERROR,
-          message: 'User Not Found With Provided Email',
-        });
-      }
-
-      await sendOTPToEmail(user[0].email);
-
-      return res.status(200).json({
-        statusCode: StatusCodes.OK,
-        status: responseStatus.RESPONSE_SUCCESS,
-        message: `Otp Send On ${email}`,
-      });
-    } catch (error) {
-      console.log(error);
-      return res
-        .status(500)
-        .send({ success: false, message: 'Server Got A Error', error });
-    }
-  },
-
-  verifyOTP: async (req, res) => {
-    try {
-      const { otp, email } = req.body;
-
-      const { error } = verifyotp_validate.validate(req.body);
+      const {id, name, email } = req.body;
+      const { error } = update_validate.validate(req.body);
 
       if (error) {
-        logger.error('OTP and email are required');
+
+        logger.error(error.message);
 
         return res.status(200).json({
           statusCode: StatusCodes.BAD_REQUEST,
           status: responseStatus.RESPONSE_ERROR,
-          error: `${error.details[0].message}`,
+          error: error.details[0].message,
         });
       }
 
-      const [user] = await db.query(' SELECT * FROM user WHERE email=?', [
-        email,
-      ]);
+      const [user] = await db.query(
+        'SELECT * FROM user WHERE id = ?',
+        [id]
+      );
 
       if (user.length === 0) {
-        logger.error(`User is not found.`);
-        return res.status(200).send({
-          statusCode: StatusCodes.BAD_REQUEST,
+
+        return res.json({
+          statusCode: StatusCodes.UNAUTHORIZED,
           status: responseStatus.RESPONSE_ERROR,
-          message: 'User is not found.',
+          message: message.DATA_NOT_FOUND_ID,
         });
       }
 
-      const [otp_user] = await db.query(
-        ' SELECT * FROM otp_verifications WHERE email = ?',
+      if(name){
+        
+        await db.query('UPDATE user SET name = ? WHERE id = ?', [name, id])
+      }
+
+      const [user_email] = await db.query(
+        'SELECT * FROM user WHERE email = ?',
         [email]
       );
 
-      if (!otp_user || otp_user.length === 0) {
-        await db.query('DELETE FROM otp_verifications WHERE email=?', [email]);
-        return res.status(200).json({
+      if (user_email.length > 0) {
+
+        return res.json({
           statusCode: StatusCodes.BAD_REQUEST,
           status: responseStatus.RESPONSE_ERROR,
-          message: 'OTP Not Match or Expired !',
+          message: message.ALL_READYEXIST,
         });
       }
 
-      if (otp_user[0].otp !== otp) {
-        await db.query('DELETE FROM otp_verifications WHERE email=?', [email]);
-        return res.status(200).json({
-          statusCode: StatusCodes.BAD_REQUEST,
-          status: responseStatus.RESPONSE_ERROR,
-          message: 'OTP does not match or has expired!',
-        });
+      if(email){
+
+        await db.query('UPDATE user SET email = ? WHERE id = ?', [email, id])
       }
 
-      const currentTime = new Date();
-      if (otp_user[0].expires_at < currentTime) {
-        await db.query('DELETE FROM otp_verifications WHERE email=?', [email]);
-        return res.status(400).json({
-          statusCode: StatusCodes.BAD_REQUEST,
-          status: responseStatus.RESPONSE_ERROR,
-          message: 'OTP has expired',
-        });
-      }
-
-      await db.query('DELETE FROM otp_verifications WHERE email=?', [email]);
+      logger.info(message.UPDATE_DATA);
 
       return res.status(200).json({
         statusCode: StatusCodes.OK,
         status: responseStatus.RESPONSE_SUCCESS,
-        message: 'You Redirect Successfully "Reset Password Page',
+        message: message.UPDATE_DATA,
       });
+
+
     } catch (error) {
-      logger.error(error);
-      return res
-        .status(500)
-        .send({ success: false, message: 'Server Got A Error', error });
+      
+      logger.error(error.message);
+
+      return res.status(200).json({
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+        status: responseStatus.RESPONSE_ERROR,
+        error: error.message,
+      });
     }
   },
 
-  forgotPassword: async (req, res) => {
+  updatePassword : async (req, res) =>{
     try {
       const { email, newpassword, confirmpassword } = req.body;
 
@@ -309,33 +321,38 @@ module.exports = {
         newpassword,
         confirmpassword,
       });
+
       if (error) {
-        logger.error('Password validation error.', error.details[0].message);
+
+        logger.error(error.message);
 
         return res.status(200).json({
           statusCode: StatusCodes.BAD_REQUEST,
           status: responseStatus.RESPONSE_ERROR,
-          error: `${error.details[0].message}`,
+          error: error.details[0].message,
         });
       }
 
       const [user] = await db.query(' SELECT * FROM user WHERE email=?', [
-        email,
+        email
       ]);
 
       if (user.length === 0) {
+
         return res.status(200).json({
           statusCode: StatusCodes.NOT_FOUND,
           status: responseStatus.RESPONSE_ERROR,
-          message: 'User Not Found With Provided Email',
+          message: message.DATA_NOT_FOUND_EMAIL,
         });
       }
       const passmatch = await bcrypt.compare(newpassword, user[0].password);
+
       if (passmatch) {
+
         return res.status(200).json({
           statusCode: StatusCodes.BAD_REQUEST,
           status: responseStatus.RESPONSE_ERROR,
-          message: 'New Password and Old Password Is Same',
+          message: message.PASS_MATCH_ERROR,
         });
       }
 
@@ -350,11 +367,217 @@ module.exports = {
         status: responseStatus.RESPONSE_SUCCESS,
         message: message.UPDATE_PASSWORD,
       });
+
     } catch (error) {
-      logger.error('Server error during password update:', error);
+            
+      logger.error(error.message);
+
+      return res.status(200).json({
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+        status: responseStatus.RESPONSE_ERROR,
+        error: error.message,
+      });
+    }
+  },
+
+  verifyEmail: async (req, res) => {
+    try {
+
+      const { email } = req.body;
+
+      const [user] = await db.query(' SELECT * FROM user WHERE email=?', [
+        email,
+      ]);
+
+      if (user.length === 0) {
+        return res.status(200).json({
+          statusCode: StatusCodes.NOT_FOUND,
+          status: responseStatus.RESPONSE_ERROR,
+          message: message.DATA_NOT_FOUND_EMAIL,
+        });
+      }
+
+      await sendOTPToEmail(user[0].email);
+
+      return res.status(200).json({
+        statusCode: StatusCodes.OK,
+        status: responseStatus.RESPONSE_SUCCESS,
+        message: message.OTP_SEND,
+      });
+
+    } catch (error) {
+
+      logger.error(error.message)
+
       return res
-        .status(500)
-        .send({ success: false, message: 'Server Got A Error', error });
+        .status(200)
+        .json({
+          statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+          status: responseStatus.RESPONSE_ERROR,
+          error: error.message,
+        });
+    }
+  },
+
+  verifyOTP: async (req, res) => {
+    try {
+      const { otp, email } = req.body;
+
+      const { error } = verifyotp_validate.validate(req.body);
+
+      if (error) {
+
+        logger.error(error.message);
+
+        return res.status(200).json({
+          statusCode: StatusCodes.BAD_REQUEST,
+          status: responseStatus.RESPONSE_ERROR,
+          error: `${error.details[0].message}`,
+        });
+      }
+
+      const [user] = await db.query(' SELECT * FROM user WHERE email=?', [
+        email,
+      ]);
+
+      if (user.length === 0) {
+
+        logger.error(message.DATA_NOT_FOUND_EMAIL);
+
+        return res.status(200).send({
+          statusCode: StatusCodes.BAD_REQUEST,
+          status: responseStatus.RESPONSE_ERROR,
+          message: message.DATA_NOT_FOUND_EMAIL,
+        });
+      }
+
+      const [otp_user] = await db.query(
+        ' SELECT * FROM otp_verifications WHERE email = ?',
+        [email]
+      );
+
+      if (!otp_user || otp_user.length === 0) {
+
+        await db.query('DELETE FROM otp_verifications WHERE email=?', [email]);
+        return res.status(200).json({
+          statusCode: StatusCodes.BAD_REQUEST,
+          status: responseStatus.RESPONSE_ERROR,
+          message: message.OTP_NOT_MATCH,
+        });
+      }
+
+      if (otp_user[0].otp !== otp) {
+
+        await db.query('DELETE FROM otp_verifications WHERE email=?', [email]);
+        return res.status(200).json({
+          statusCode: StatusCodes.BAD_REQUEST,
+          status: responseStatus.RESPONSE_ERROR,
+          message: message.OTP_NOT_MATCH,
+        });
+      }
+
+      const currentTime = new Date();
+
+      if (otp_user[0].expires_at < currentTime) {
+
+        await db.query('DELETE FROM otp_verifications WHERE email=?', [email]);
+        return res.status(400).json({
+          statusCode: StatusCodes.BAD_REQUEST,
+          status: responseStatus.RESPONSE_ERROR,
+          message: message.OTP_EXPIRED,
+        });
+      }
+
+      await db.query('DELETE FROM otp_verifications WHERE email=?', [email]);
+
+      return res.status(200).json({
+        statusCode: StatusCodes.OK,
+        status: responseStatus.RESPONSE_SUCCESS,
+        message: message.SUCCESSFULLY_RESET_PAGE,
+      });
+
+    } catch (error) {
+
+      logger.error(error.message)
+
+      return res
+        .status(200)
+        .json({
+          statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+          status: responseStatus.RESPONSE_ERROR,
+          error: error.message,
+        });
+    }
+  },
+
+  forgotPassword: async (req, res) => {
+    try {
+
+      const { email, newpassword, confirmpassword } = req.body;
+
+      const { error } = forgotPassword_validate.validate({
+        newpassword,
+        confirmpassword,
+      });
+
+      if (error) {
+
+        logger.error(error.message);
+
+        return res.status(200).json({
+          statusCode: StatusCodes.BAD_REQUEST,
+          status: responseStatus.RESPONSE_ERROR,
+          error: error.details[0].message,
+        });
+      }
+
+      const [user] = await db.query(' SELECT * FROM user WHERE email=?', [
+        email,
+      ]);
+
+      if (user.length === 0) {
+
+        return res.status(200).json({
+          statusCode: StatusCodes.NOT_FOUND,
+          status: responseStatus.RESPONSE_ERROR,
+          message: message.DATA_NOT_FOUND_EMAIL,
+        });
+      }
+
+      const passmatch = await bcrypt.compare(newpassword, user[0].password);
+
+      if (passmatch) {
+
+        return res.status(200).json({
+          statusCode: StatusCodes.BAD_REQUEST,
+          status: responseStatus.RESPONSE_ERROR,
+          message: message.PASS_MATCH_ERROR,
+        });
+      }
+
+      const hashpassword = await bcrypt.hash(newpassword, 10);
+      await db.query('UPDATE user SET password = ? WHERE email = ?', [
+        hashpassword,
+        email,
+      ]);
+
+      return res.status(200).json({
+        statusCode: StatusCodes.OK,
+        status: responseStatus.RESPONSE_SUCCESS,
+        message: message.UPDATE_PASSWORD,
+      });
+
+    } catch (error) {
+
+      logger.error(error.message)
+
+      return res
+        .status(200)
+        .json({
+          statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+          status: responseStatus.RESPONSE_ERROR,
+          error: error.message,
+        });
     }
   },
 };
