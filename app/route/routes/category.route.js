@@ -3,10 +3,10 @@ let route = express.Router();
 
 const CategoryRouter = require('../../controller/category.controller')
 
-route.post('/categorycreate', CategoryRouter.CreateCategory)
-route.get('/getlistofcategory', CategoryRouter.GetListOfCategory)
-route.post('/updatecategory', CategoryRouter.UpdateCategory)
-route.post('/deletecategory/:id', CategoryRouter.DeleteCategory)
+route.post('/categorycreate', CategoryRouter.createCategory)
+route.get('/getlistofcategory', CategoryRouter.getListOfCategory)
+route.put('/updatecategory', CategoryRouter.updateCategory)
+route.delete('/deletecategory/:id', CategoryRouter.deleteCategory)
 
 
 module.exports = route
