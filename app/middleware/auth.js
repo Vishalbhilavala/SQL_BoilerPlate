@@ -8,11 +8,16 @@ const auth = (req, res, next) =>{
     const token = req.header('token')
 
     if(!token){
-        return res.status(404).send({success: false, message:message.DATA_NOT_FOUND})
+        return res
+          .status(200)
+          .json({
+            statusCode: StatusCodes.NOT_FOUND,
+            status: responseStatus.RESPONSE_ERROR,
+            message:`Token ${message.DATA_NOT_FOUND}`,
+          });
     }
 
     const Jwt_Secret = process.env.JWT_SECRET
-
     try {
         const valid = jwt.verify(token, Jwt_Secret)
         req.user_data = valid    

@@ -1,9 +1,9 @@
 const router = require('express').Router()
-const UserRouter = require('./routes/user')
-const CategoryRouter = require('./routes/category.route')
+const userRouter = require('./routes/user')
+const categoryRouter = require('./routes/category.route')
 
 
-router.use('/api/users', UserRouter)
-router.use('/api/category', CategoryRouter)
+router.use('/api/users', userRouter)
+router.use('/api/category', categoryRouter)
 
 module.exports = router

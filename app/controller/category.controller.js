@@ -8,17 +8,13 @@ const { GeneralResponse } = require('../utils/responce');
 const { create_category_validate } = require('../validation/categoryvalidate');
 
 module.exports = {
-
   createCategory: async (req, res) => {
     try {
-
       const { category_name } = req.body;
       const { error } = create_category_validate.validate({ category_name });
 
       if (error) {
-
         logger.error(error.message);
-
         return res.status(200).json({
           statusCode: StatusCodes.BAD_REQUEST,
           status: responseStatus.RESPONSE_ERROR,
@@ -33,11 +29,10 @@ module.exports = {
 
       if (category_existed.length > 0) {
         logger.error(message.ALL_READYEXIST);
-
         return res.status(200).json({
           statusCode: StatusCodes.BAD_REQUEST,
           status: responseStatus.RESPONSE_ERROR,
-          message: message.ALL_READYEXIST,
+          message: `Category ${ message.ALL_READYEXIST }`,
           category_existed,
         });
       }
@@ -51,11 +46,10 @@ module.exports = {
       return res.status(200).json({
         statusCode: StatusCodes.CREATED,
         status: responseStatus.RESPONSE_SUCCESS,
-        message: message.SUCCESSFULLY_ADDED,
+        message: `Category ${ message.SUCCESSFULLY_ADDED }`,
       });
 
     } catch (error) {
-
       logger.error(error.message);
       return res.status(200).json({
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
@@ -67,7 +61,6 @@ module.exports = {
 
   getListOfCategory: async (req, res) => {
     try {
-
       let { page, data, sortBy, orderBy = "asc", search } = req.body;
       const [category] = await db.query('SELECT * FROM categories ');
 
@@ -99,18 +92,51 @@ module.exports = {
       return res.status(200).json({
         statusCode: StatusCodes.OK,
         status: responseStatus.RESPONSE_SUCCESS,
-        message: message.SUCCESSFULLY,
+        message: `Category ${message.SUCCESSFULLY}`,
         Category: show,
       });
 
     } catch (error) {
-
       logger.error(error.message);
       return res.status(200).json({
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         status: responseStatus.RESPONSE_ERROR,
         error: error.message,
       });
+    }
+  },
+
+  viewCategory: async (req, res) => {
+    try {
+      const id = req.params.id;
+      const [category] = await db.query('SELECT * FROM categories WHERE id = ?', [
+        id,
+      ]);
+
+      if (category.length === 0) {
+        return res.json({
+          statusCode: StatusCodes.UNAUTHORIZED,
+          status: responseStatus.RESPONSE_ERROR,
+          message: `Category ${message.DATA_NOT_FOUND_ID}`,
+        });
+      }
+
+      return res.status(200).json({
+        statusCode: StatusCodes.OK,
+        status: responseStatus.RESPONSE_SUCCESS,
+        message: `Category ${message.SUCCESSFULLY}`,
+        Category: category
+      });
+
+    } catch (error) {
+      logger.error(error.message)
+      return res
+        .status(200)
+        .json({
+          statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+          status: responseStatus.RESPONSE_ERROR,
+          error: error.message,
+        });
     }
   },
 
@@ -121,9 +147,7 @@ module.exports = {
       const { error } = create_category_validate.validate({ category_name });
 
       if (error) {
-
         logger.error(error.message);
-
         return res.status(200).json({
           statusCode: StatusCodes.BAD_REQUEST,
           status: responseStatus.RESPONSE_ERROR,
@@ -137,13 +161,11 @@ module.exports = {
       );
 
       if (category_existed.length === 0) {
-
         logger.error(message.DATA_NOT_FOUND_ID);
-
         return res.status(200).json({
           statusCode: StatusCodes.NOT_FOUND,
           status: responseStatus.RESPONSE_ERROR,
-          message: message.DATA_NOT_FOUND_ID,
+          message: `Category ${ message.DATA_NOT_FOUND_ID }`,
         });
       }
 
@@ -153,13 +175,11 @@ module.exports = {
       );
 
       if (category_name_existed.length > 0) {
-
         logger.error(message.ALL_READYEXIST);
-
         return res.status(200).json({
           statusCode: StatusCodes.BAD_REQUEST,
           status: responseStatus.RESPONSE_ERROR,
-          message: message.ALL_READYEXIST,
+          message: `Category ${message.ALL_READYEXIST}`,
         });
       }
 
@@ -169,17 +189,14 @@ module.exports = {
       ]);
       
       logger.info(message.UPDATE_DATA);
-
       return res.status(200).json({
         statusCode: StatusCodes.OK,
         status: responseStatus.RESPONSE_SUCCESS,
-        message: message.UPDATE_DATA,
+        message: `Category ${message.UPDATE_DATA}`,
       });
 
     } catch (error) {
-
       logger.error(error.message);
-
       return res.status(200).json({
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         status: responseStatus.RESPONSE_ERROR,
@@ -198,30 +215,25 @@ module.exports = {
       );
       
       if (category_existed.length === 0) {
-
         logger.error(message.DATA_NOT_FOUND_ID);
-
         return res.status(200).json({
           statusCode: StatusCodes.NOT_FOUND,
           status: responseStatus.RESPONSE_ERROR,
-          message: message.DATA_NOT_FOUND_ID,
+          message: `Category ${ message.DATA_NOT_FOUND_ID }`,
         });
       }
 
       await db.query('DELETE FROM categories WHERE id = ?', [id]);
 
       logger.info(message.SUCCESSFULLY_DELETED);
-
       return res.status(200).json({
         statusCode: StatusCodes.OK,
         status: responseStatus.RESPONSE_SUCCESS,
-        message: message.SUCCESSFULLY_DELETED,
+        message: `Category ${message.SUCCESSFULLY_DELETED}`,
       });
 
     } catch (error) {
-
       logger.error(error.message);
-
       return res.status(200).json({
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         status: responseStatus.RESPONSE_ERROR,

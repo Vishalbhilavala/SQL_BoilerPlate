@@ -4,7 +4,6 @@ const customFormat = winston.format.printf(({ level, message}) => {
     if (message.includes("undefined")) {
       message = message.replace("undefined", "N/A");
     }
-  
     return `[${level}]: ${message}`;
   });
 

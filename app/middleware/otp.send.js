@@ -1,19 +1,13 @@
 const nodemailer = require('nodemailer');
 const db = require('../middleware/database');
 const logger = require('../services/logger');
-require('dotenv').config()
-
-const service = process.env.SERVICE;
-const user = process.env.USER_EMAIL;
-const pass = process.env.PASS
 
 const transporter = nodemailer.createTransport({
-    service: service,
+    service: 'gmail',
     auth: {
-      user: user,
-      pass: pass
+      user: 'vishalbhilavala@gmail.com',
+      pass: 'wolh arlq uedi mjey'
     },
-
     tls: {
       rejectUnauthorized: false
     }
@@ -24,29 +18,28 @@ function generateOTP() {
 }
 
 async function sendOTPToEmail(email) {
-
     const otp = generateOTP();
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
-
     const query = 'INSERT INTO otp_verifications (email, otp, expires_at) VALUES (?, ?, ?)';
-    await db.execute(query, [email, otp, expiresAt], (err, result) => {
-        if (err) {
-            logger.error(err);
-            return; 
+
+    await db.execute(query, [email, otp, expiresAt], (error, result) => {
+        if (error) {
+            logger.error(error);
+            return res.status(200).json({
+              statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+              status: responseStatus.RESPONSE_ERROR,
+              error: error,
+            });
         }
     })
 
-    const from = process.env.FROM
-    const subject = process.env.SUBJECT
-    const text = process.env.TEXT
-    const html = process.env.HTML
-    
     const info = await transporter.sendMail({
-        from: from,
+        from: '"vishal bhilavala" <vishalbhilavala@gmail.com>',
         to: email,
-        subject: subject,
-        text: text,
-        html: html,
+        subject: "Set New Password ✔",
+        text: "We Send a otp Please confirm its you",
+        html: `Verify Using This Otp : <b>${otp}</b>
+        <p><b>Note: </b>Otp will expire in 15 Minutes</p>`,
       });
 }  
 
