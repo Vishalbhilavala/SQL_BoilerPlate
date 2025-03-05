@@ -41,11 +41,11 @@ module.exports = {
       );
 
       logger.info('Category Added Successfully');
-      return res.status(200).json({
-        statusCode: StatusCodes.CREATED,
-        status: responseStatus.RESPONSE_SUCCESS,
-        message: 'Category Added Successfully',
-      });
+        return res.status(200).json({
+          statusCode: StatusCodes.CREATED,
+          status: responseStatus.RESPONSE_SUCCESS,
+          message: 'Category Added Successfully',
+        });
     } catch (error) {
       logger.error('Unexpected error', error.message);
       return res.status(200).json({
@@ -59,6 +59,17 @@ module.exports = {
     try {
       let { page, data, sortBy, orderBy = "asc", search } = req.body;
       const [category] = await db.query('SELECT * FROM categories ');
+
+      if(category.length === 0 ){
+
+        logger.error(`Category Data is Empty.`);
+        
+        return res.status(200).json({
+          statusCode: StatusCodes.NOT_FOUND,
+          status: responseStatus.RESPONSE_ERROR,
+          message: `Category Data is Empty.`,
+        });
+      }
 
       let filteredCategory = category;
 
@@ -91,8 +102,11 @@ module.exports = {
         message: 'List Of all Categories',
         Category: show,
       });
+
     } catch (error) {
+
       logger.error('Unexpected error', error.message);
+      
       return res.status(200).json({
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         status: responseStatus.RESPONSE_ERROR,
@@ -102,11 +116,15 @@ module.exports = {
   },
   UpdateCategory: async (req, res) => {
     try {
+
       const { id, category_name } = req.body;
 
       const { error } = create_category_validate.validate({ category_name });
+
       if (error) {
+
         logger.error('Error from category validation');
+
         return res.status(200).json({
           statusCode: StatusCodes.BAD_REQUEST,
           status: responseStatus.RESPONSE_ERROR,
@@ -118,6 +136,7 @@ module.exports = {
         'SELECT * FROM categories WHERE id = ?',
         [id]
       );
+
       if (category_existed.length === 0) {
         logger.error(`Category with ID ${id} not found`);
         return res.status(200).json({
@@ -149,8 +168,10 @@ module.exports = {
         status: responseStatus.RESPONSE_SUCCESS,
         message: `Category with ID ${id} updated successfully`,
       });
+
     } catch (error) {
       logger.error('Unexpected error', error.message);
+      
       return res.status(200).json({
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         status: responseStatus.RESPONSE_ERROR,
@@ -183,6 +204,7 @@ module.exports = {
         status: responseStatus.RESPONSE_SUCCESS,
         message: `Category with ID ${id} deleted successfully`,
       });
+
     } catch (error) {
       logger.error('Unexpected error', error.message);
       return res.status(200).json({

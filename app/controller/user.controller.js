@@ -62,13 +62,11 @@ module.exports = {
       });
     } catch (error) {
       logger.error('Unexpected error:', error.message);
-      return res
-        .status(200)
-        .json({
-          statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
-          status: responseStatus.RESPONSE_ERROR,
-          error: error.message,
-        });
+      return res.status(200).json({
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+        status: responseStatus.RESPONSE_ERROR,
+        error: error.message,
+      });
     }
   },
 
@@ -112,19 +110,23 @@ module.exports = {
         .status(200)
         .send({ success: true, message: 'Login SuccessFully', token });
     } catch (error) {
-      console.log(error);
-      return res
-        .status(500)
-        .send({ success: false, message: 'Error in Server', error });
+      logger.error('Unexpected error:', error.message);
+      return res.status(200).json({
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+        status: responseStatus.RESPONSE_ERROR,
+        error: error.message,
+      });
     }
   },
 
   viewProfile: async (req, res) => {
     try {
       const use_id = req.user_data.id;
+      
       const [user] = await db.query('SELECT * FROM user WHERE id = ?', [
         use_id,
       ]);
+
       if (user.length === 0) {
         return res.json({
           statusCode: StatusCodes.UNAUTHORIZED,
@@ -132,22 +134,39 @@ module.exports = {
           message: 'User Not Found With Provided ID',
         });
       }
+
       return res.status(200).json({
         statusCode: StatusCodes.OK,
         status: responseStatus.RESPONSE_SUCCESS,
         message: 'User Match With ID',
-        user
+        user,
       });
+
     } catch (error) {
-      console.log(error);
-      return res.status(500).send({ success: false, message: 'Error', error });
+
+      logger.error('Unexpected error:', error.message);
+
+      return res.status(200).json({
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+        status: responseStatus.RESPONSE_ERROR,
+        error: error.message,
+      });
     }
   },
 
   getListOfUser: async (req, res) => {
     try {
-      let { page, data, sortBy, orderBy = "asc", search } = req.body;
-      const [user] = await db.query('SELECT * FROM user');  
+      let { page, data, sortBy, orderBy = 'asc', search } = req.body;
+      const [user] = await db.query('SELECT * FROM user');
+
+      if (user.length === 0) {
+        logger.error(`User's Data is Empty.`);
+        return res.status(200).json({
+          statusCode: StatusCodes.NOT_FOUND,
+          status: responseStatus.RESPONSE_ERROR,
+          message: `User's Data is Empty.`,
+        });
+      }
 
       let filteredUser = user;
 
@@ -155,14 +174,14 @@ module.exports = {
         const searchLower = search.toLowerCase();
         filteredUser = user.filter(
           (user_data) =>
-            user_data.name.toLowerCase().includes(searchLower) || 
+            user_data.name.toLowerCase().includes(searchLower) ||
             user_data.email.toLowerCase().includes(searchLower)
         );
       }
 
       if (sortBy && filteredUser.length > 0) {
         filteredUser.sort((a, b) => {
-          if (orderBy === "desc") {
+          if (orderBy === 'desc') {
             return b[sortBy] > a[sortBy] ? 1 : -1;
           } else {
             return a[sortBy] > b[sortBy] ? 1 : -1;
@@ -176,20 +195,18 @@ module.exports = {
       const show = filteredUser.slice(StartIndex, EndIndex);
 
       return res.status(200).json({
-        statusCode:StatusCodes.OK,
+        statusCode: StatusCodes.OK,
         status: responseStatus.RESPONSE_SUCCESS,
-        message:"List Of all User's",
-        user: show, 
+        message: "List Of all User's",
+        user: show,
       });
     } catch (error) {
-      console.log(error);
-      return res
-        .status(500)
-        .send({
-          success: false,
-          message: 'Server Error',
-          error: error.message,
-        });
+      logger.error('Unexpected error:', error.message);
+      return res.status(200).json({
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+        status: responseStatus.RESPONSE_ERROR,
+        error: error.message,
+      });
     }
   },
 
@@ -217,10 +234,12 @@ module.exports = {
         message: `Otp Send On ${email}`,
       });
     } catch (error) {
-      console.log(error);
-      return res
-        .status(500)
-        .send({ success: false, message: 'Server Got A Error', error });
+      logger.error('Unexpected error:', error.message);
+      return res.status(200).json({
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+        status: responseStatus.RESPONSE_ERROR,
+        error: error.message,
+      });
     }
   },
 
@@ -294,10 +313,12 @@ module.exports = {
         message: 'You Redirect Successfully "Reset Password Page',
       });
     } catch (error) {
-      logger.error(error);
-      return res
-        .status(500)
-        .send({ success: false, message: 'Server Got A Error', error });
+      logger.error('Unexpected error:', error.message);
+      return res.status(200).json({
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+        status: responseStatus.RESPONSE_ERROR,
+        error: error.message,
+      });
     }
   },
 
@@ -351,10 +372,12 @@ module.exports = {
         message: message.UPDATE_PASSWORD,
       });
     } catch (error) {
-      logger.error('Server error during password update:', error);
-      return res
-        .status(500)
-        .send({ success: false, message: 'Server Got A Error', error });
+      logger.error('Unexpected error:', error.message);
+      return res.status(200).json({
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+        status: responseStatus.RESPONSE_ERROR,
+        error: error.message,
+      });
     }
   },
 };
