@@ -13,7 +13,7 @@ const auth = (req, res, next) =>{
           .json({
             statusCode: StatusCodes.NOT_FOUND,
             status: responseStatus.RESPONSE_ERROR,
-            message:`Token ${message.DATA_NOT_FOUND}`,
+            message:`Token ${message.NOT_FOUND}`,
           });
     }
 
@@ -22,11 +22,10 @@ const auth = (req, res, next) =>{
         const valid = jwt.verify(token, Jwt_Secret)
         req.user_data = valid    
         next()
-
     } catch (error) {
         logger.error(error)
         return res
-          .status(200)
+          .status(500)
           .json({
             statusCode: StatusCodes.UNAUTHORIZED,
             status: responseStatus.RESPONSE_ERROR,

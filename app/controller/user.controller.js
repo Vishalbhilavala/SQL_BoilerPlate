@@ -20,7 +20,6 @@ module.exports = {
   registration: async (req, res, next) => {
     try {
       const { name, email, password } = req.body;
-
       const { error } = registration_validate.validate(req.body);
 
       if (error) {
@@ -38,11 +37,11 @@ module.exports = {
       );
 
       if (user_existed.length > 0) {
-        logger.error(`User ${message.ALL_READYEXIST}`);
+        logger.error(`User ${message.ALREADY_EXIST}`);
         return res.status(200).json({
           statusCode: StatusCodes.BAD_REQUEST,
           status: responseStatus.RESPONSE_ERROR,
-          message: `User ${message.ALL_READYEXIST}`,
+          message: `User ${message.ALREADY_EXIST}`,
           user: user_existed,
         });
       }
@@ -55,16 +54,15 @@ module.exports = {
         [name, email, hashpass]
       );
 
-      logger.info(`User ${message.REGISTER_SUCCESSFULLY}`);
+      logger.info(message.REGISTER_SUCCESS);
       return res.json({
         statusCode: StatusCodes.CREATED,
         status: responseStatus.RESPONSE_SUCCESS,
-        message: `User ${message.REGISTER_SUCCESSFULLY}`,
+        message: message.REGISTER_SUCCESS,
       });
-
     } catch (error) {
       logger.error(error.message);
-      return res.status(200).json({
+      return res.status(500).json({
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         status: responseStatus.RESPONSE_ERROR,
         error: error.message,
@@ -91,22 +89,22 @@ module.exports = {
       ]);
 
       if (user.length === 0) {
-        logger.error(`User ${message.DATA_NOT_FOUND_EMAIL}`);
+        logger.error(`User ${message.NOT_FOUND}`);
         return res.status(200).json({
           statusCode: StatusCodes.UNAUTHORIZED,
           status: responseStatus.RESPONSE_ERROR,
-          message: `User ${message.DATA_NOT_FOUND_EMAIL}`,
+          message: `User ${message.NOT_FOUND}`,
         });
       }
 
       const passvalid = await bcrypt.compare(password, user[0].password);
 
       if (!passvalid) {
-        logger.error(`${message.INVALID_PASSWORD}`);
+        logger.error(message.CURRENT_PASSWORD_INVALID);
         return res.status(200).json({
           statusCode: StatusCodes.BAD_REQUEST,
           status: responseStatus.RESPONSE_ERROR,
-          message: `${message.INVALID_PASSWORD}`,
+          message: message.CURRENT_PASSWORD_INVALID,
         });
       }
 
@@ -117,17 +115,16 @@ module.exports = {
         { expiresIn: '5d' }
       );
 
-      logger.info(`${message.LOGIN_SUCCESSFULLY}`);
+      logger.info(message.LOGIN_SUCCESS);
       return res.status(200).json({
         statusCode: StatusCodes.OK,
         status: responseStatus.RESPONSE_SUCCESS,
-        message: `${message.LOGIN_SUCCESSFULLY}`,
+        message: message.LOGIN_SUCCESS,
         token,
       });
-      
     } catch (error) {
       logger.error(error.message);
-      return res.status(200).json({
+      return res.status(500).json({
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         status: responseStatus.RESPONSE_ERROR,
         error: error.message,
@@ -143,24 +140,24 @@ module.exports = {
       ]);
 
       if (user.length === 0) {
-        logger.error(`User ${message.DATA_NOT_FOUND_ID}`);
+        logger.error(`User ${message.NOT_FOUND}`);
         return res.status(200).json({
           statusCode: StatusCodes.UNAUTHORIZED,
           status: responseStatus.RESPONSE_ERROR,
-          message: `User ${message.DATA_NOT_FOUND_ID}`,
+          message: `User ${message.NOT_FOUND}`,
         });
       }
 
-      logger.info(`User ${message.SUCCESSFULLY}`);
+      logger.info(`User ${message.GET_SUCCESS}`);
       return res.status(200).json({
         statusCode: StatusCodes.OK,
         status: responseStatus.RESPONSE_SUCCESS,
-        message: `User ${message.SUCCESSFULLY}`,
+        message: `User ${message.GET_SUCCESS}`,
         user,
       });
     } catch (error) {
       logger.error(error.message);
-      return res.status(200).json({
+      return res.status(500).json({
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         status: responseStatus.RESPONSE_ERROR,
         error: error.message,
@@ -172,7 +169,6 @@ module.exports = {
     try {
       let { page, data, sortBy, orderBy = 'asc', search } = req.body;
       const [user] = await db.query('SELECT * FROM user');
-
       let filteredUser = user;
 
       if (search) {
@@ -202,7 +198,7 @@ module.exports = {
       return res.status(200).json({
         statusCode: StatusCodes.OK,
         status: responseStatus.RESPONSE_SUCCESS,
-        message: `User ${message.SUCCESSFULLY}`,
+        message: `User ${message.GET_SUCCESS}`,
         user: show,
       });
     } catch (error) {
@@ -232,11 +228,11 @@ module.exports = {
       const [user] = await db.query('SELECT * FROM user WHERE id = ?', [id]);
 
       if (user.length === 0) {
-        logger.error(`User ${message.DATA_NOT_FOUND_ID}`);
+        logger.error(`User ${message.NOT_FOUND}`);
         return res.json({
-          statusCode: StatusCodes.UNAUTHORIZED,
+          statusCode: StatusCodes.NOT_FOUND,
           status: responseStatus.RESPONSE_ERROR,
-          message: `User ${message.DATA_NOT_FOUND_ID}`,
+          message: `User ${message.NOT_FOUND}`,
         });
       }
 
@@ -253,7 +249,7 @@ module.exports = {
         return res.json({
           statusCode: StatusCodes.BAD_REQUEST,
           status: responseStatus.RESPONSE_ERROR,
-          message: `User ${message.ALL_READYEXIST}`,
+          message: `User ${message.ALREADY_EXIST}`,
         });
       }
 
@@ -261,11 +257,11 @@ module.exports = {
         await db.query('UPDATE user SET email = ? WHERE id = ?', [email, id]);
       }
 
-      logger.info(`User ${message.UPDATE_DATA}`);
+      logger.info(`User ${message.UPDATED_SUCCESS}`);
       return res.status(200).json({
         statusCode: StatusCodes.OK,
         status: responseStatus.RESPONSE_SUCCESS,
-        message: `User ${message.UPDATE_DATA}`,
+        message: `User ${message.UPDATED_SUCCESS}`,
       });
     } catch (error) {
       logger.error(error.message);
@@ -299,11 +295,11 @@ module.exports = {
       ]);
 
       if (user.length === 0) {
-        logger.error(`User ${message.DATA_NOT_FOUND_EMAIL}`);
+        logger.error(`User ${message.NOT_FOUND}`);
         return res.status(200).json({
           statusCode: StatusCodes.NOT_FOUND,
           status: responseStatus.RESPONSE_ERROR,
-          message: `User ${message.DATA_NOT_FOUND_EMAIL}`,
+          message: `User ${message.NOT_FOUND}`,
         });
       }
 
@@ -313,7 +309,7 @@ module.exports = {
         return res.status(200).json({
           statusCode: StatusCodes.BAD_REQUEST,
           status: responseStatus.RESPONSE_ERROR,
-          message: message.PASS_MATCH_ERROR,
+          message: message.SAME_PASSWORD_ERROR,
         });
       }
 
@@ -323,16 +319,15 @@ module.exports = {
         email,
       ]);
 
-      logger.info(`${message.UPDATE_PASSWORD}`);
+      logger.info(`Password ${message.UPDATED_SUCCESS}`);
       return res.status(200).json({
         statusCode: StatusCodes.OK,
         status: responseStatus.RESPONSE_SUCCESS,
-        message: `${message.UPDATE_PASSWORD}`,
+        message: `Password ${message.UPDATED_SUCCESS}`,
       });
-
     } catch (error) {
       logger.error(error.message);
-      return res.status(200).json({
+      return res.status(500).json({
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         status: responseStatus.RESPONSE_ERROR,
         error: error.message,
@@ -347,12 +342,12 @@ module.exports = {
         email,
       ]);
 
-      logger.error(`User ${message.DATA_NOT_FOUND_EMAIL}`)
+      logger.error(`User ${message.NOT_FOUND}`)
       if (user.length === 0) {
         return res.status(200).json({
           statusCode: StatusCodes.NOT_FOUND,
           status: responseStatus.RESPONSE_ERROR,
-          message: `User ${message.DATA_NOT_FOUND_EMAIL}`,
+          message: `User ${message.NOT_FOUND}`,
         });
       }
 
@@ -361,12 +356,11 @@ module.exports = {
       return res.status(200).json({
         statusCode: StatusCodes.OK,
         status: responseStatus.RESPONSE_SUCCESS,
-        message: message.OTP_SEND,
+        message: `${message.OTP_SENT} email :${user[0].email}`,
       });
-
     } catch (error) {
       logger.error(error.message);
-      return res.status(200).json({
+      return res.status(500).json({
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         status: responseStatus.RESPONSE_ERROR,
         error: error.message,
@@ -393,11 +387,11 @@ module.exports = {
       ]);
 
       if (user.length === 0) {
-        logger.error(`User ${message.DATA_NOT_FOUND_EMAIL}`);
+        logger.error(`User ${message.NOT_FOUND}`);
         return res.status(200).send({
           statusCode: StatusCodes.BAD_REQUEST,
           status: responseStatus.RESPONSE_ERROR,
-          message: `User ${message.DATA_NOT_FOUND_EMAIL}`,
+          message: `User ${message.NOT_FOUND}`,
         });
       }
 
@@ -411,7 +405,7 @@ module.exports = {
         return res.status(200).json({
           statusCode: StatusCodes.BAD_REQUEST,
           status: responseStatus.RESPONSE_ERROR,
-          message: message.OTP_NOT_MATCH,
+          message: message.OTP_EXPIRED,
         });
       }
 
@@ -420,7 +414,7 @@ module.exports = {
         return res.status(200).json({
           statusCode: StatusCodes.BAD_REQUEST,
           status: responseStatus.RESPONSE_ERROR,
-          message: message.OTP_NOT_MATCH,
+          message: message.OTP_INVALID,
         });
       }
 
@@ -439,9 +433,8 @@ module.exports = {
       return res.status(200).json({
         statusCode: StatusCodes.OK,
         status: responseStatus.RESPONSE_SUCCESS,
-        message: message.SUCCESSFULLY_RESET_PAGE,
+        message: message.OTP_VERIFIED_SUCCESS,
       });
-
     } catch (error) {
       logger.error(error.message);
       return res.status(200).json({
@@ -474,11 +467,11 @@ module.exports = {
       ]);
 
       if (user.length === 0) {
-        logger.error(`User ${message.DATA_NOT_FOUND_EMAIL}`)
+        logger.error(`User ${message.NOT_FOUND}`)
         return res.status(200).json({
           statusCode: StatusCodes.NOT_FOUND,
           status: responseStatus.RESPONSE_ERROR,
-          message: `User ${message.DATA_NOT_FOUND_EMAIL}`,
+          message: `User ${message.NOT_FOUND}`,
         });
       }
 
@@ -488,7 +481,7 @@ module.exports = {
         return res.status(200).json({
           statusCode: StatusCodes.BAD_REQUEST,
           status: responseStatus.RESPONSE_ERROR,
-          message: message.PASS_MATCH_ERROR,
+          message: message.SAME_PASSWORD_ERROR,
         });
       }
 
@@ -501,12 +494,11 @@ module.exports = {
       return res.status(200).json({
         statusCode: StatusCodes.OK,
         status: responseStatus.RESPONSE_SUCCESS,
-        message: message.UPDATE_PASSWORD,
+        message: `Password ${message.UPDATED_SUCCESS}`,
       });
-
     } catch (error) {
       logger.error(error.message);
-      return res.status(200).json({
+      return res.status(500).json({
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         status: responseStatus.RESPONSE_ERROR,
         error: error.message,

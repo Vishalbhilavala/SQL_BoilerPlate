@@ -28,11 +28,11 @@ module.exports = {
       );
 
       if (category_existed.length > 0) {
-        logger.error(message.ALL_READYEXIST);
+        logger.error(`Category ${ message.ALREADY_EXIST }`);
         return res.status(200).json({
           statusCode: StatusCodes.BAD_REQUEST,
           status: responseStatus.RESPONSE_ERROR,
-          message: `Category ${ message.ALL_READYEXIST }`,
+          message: `Category ${ message.ALREADY_EXIST }`,
           category_existed,
         });
       }
@@ -42,16 +42,15 @@ module.exports = {
         [category_name]
       );
 
-      logger.info(message.SUCCESSFULLY_ADDED);
+      logger.info(`Category ${ message.ADD_SUCCESS }`);
       return res.status(200).json({
         statusCode: StatusCodes.CREATED,
         status: responseStatus.RESPONSE_SUCCESS,
-        message: `Category ${ message.SUCCESSFULLY_ADDED }`,
+        message: `Category ${ message.ADD_SUCCESS }`,
       });
-
     } catch (error) {
       logger.error(error.message);
-      return res.status(200).json({
+      return res.status(500).json({
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         status: responseStatus.RESPONSE_ERROR,
         error: error.message,
@@ -63,7 +62,6 @@ module.exports = {
     try {
       let { page, data, sortBy, orderBy = "asc", search } = req.body;
       const [category] = await db.query('SELECT * FROM categories ');
-
       let filteredCategory = category;
 
       if (search) {
@@ -86,19 +84,18 @@ module.exports = {
 
       let StartIndex = (page - 1) * data;
       let EndIndex = StartIndex + data;
-
       const show = filteredCategory.slice(StartIndex, EndIndex);
 
+      logger.info(`Category ${message.GET_SUCCESS}`)
       return res.status(200).json({
         statusCode: StatusCodes.OK,
         status: responseStatus.RESPONSE_SUCCESS,
-        message: `Category ${message.SUCCESSFULLY}`,
+        message: `Category ${message.GET_SUCCESS}`,
         Category: show,
       });
-
     } catch (error) {
       logger.error(error.message);
-      return res.status(200).json({
+      return res.status(500).json({
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         status: responseStatus.RESPONSE_ERROR,
         error: error.message,
@@ -115,23 +112,22 @@ module.exports = {
 
       if (category.length === 0) {
         return res.json({
-          statusCode: StatusCodes.UNAUTHORIZED,
+          statusCode: StatusCodes.NOT_FOUND,
           status: responseStatus.RESPONSE_ERROR,
-          message: `Category ${message.DATA_NOT_FOUND_ID}`,
+          message: `Category ${message.NOT_FOUND}`,
         });
       }
-
+      logger.info(`Category ${message.GET_SUCCESS}`)
       return res.status(200).json({
         statusCode: StatusCodes.OK,
         status: responseStatus.RESPONSE_SUCCESS,
-        message: `Category ${message.SUCCESSFULLY}`,
+        message: `Category ${message.GET_SUCCESS}`,
         Category: category
       });
-
     } catch (error) {
       logger.error(error.message)
       return res
-        .status(200)
+        .status(500)
         .json({
           statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
           status: responseStatus.RESPONSE_ERROR,
@@ -143,7 +139,6 @@ module.exports = {
   updateCategory: async (req, res) => {
     try {
       const { id, category_name } = req.body;
-
       const { error } = create_category_validate.validate({ category_name });
 
       if (error) {
@@ -161,11 +156,11 @@ module.exports = {
       );
 
       if (category_existed.length === 0) {
-        logger.error(message.DATA_NOT_FOUND_ID);
+        logger.error(`Category ${ message.NOT_FOUND}`);
         return res.status(200).json({
           statusCode: StatusCodes.NOT_FOUND,
           status: responseStatus.RESPONSE_ERROR,
-          message: `Category ${ message.DATA_NOT_FOUND_ID }`,
+          message: `Category ${ message.NOT_FOUND}`,
         });
       }
 
@@ -175,11 +170,11 @@ module.exports = {
       );
 
       if (category_name_existed.length > 0) {
-        logger.error(message.ALL_READYEXIST);
+        logger.error(`Category ${message.ALREADY_EXIST}`);
         return res.status(200).json({
           statusCode: StatusCodes.BAD_REQUEST,
           status: responseStatus.RESPONSE_ERROR,
-          message: `Category ${message.ALL_READYEXIST}`,
+          message: `Category ${message.ALREADY_EXIST}`,
         });
       }
 
@@ -188,16 +183,15 @@ module.exports = {
         id,
       ]);
       
-      logger.info(message.UPDATE_DATA);
+      logger.info(`Category ${message.UPDATED_SUCCESS}`);
       return res.status(200).json({
         statusCode: StatusCodes.OK,
         status: responseStatus.RESPONSE_SUCCESS,
-        message: `Category ${message.UPDATE_DATA}`,
+        message: `Category ${message.UPDATED_SUCCESS}`,
       });
-
     } catch (error) {
       logger.error(error.message);
-      return res.status(200).json({
+      return res.status(500).json({
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         status: responseStatus.RESPONSE_ERROR,
         error: error.message,
@@ -208,33 +202,31 @@ module.exports = {
   deleteCategory: async (req, res) => {
     try {
       const { id } = req.params;
-
       const [category_existed] = await db.query(
         'SELECT * FROM categories WHERE id = ?',
         [id]
       );
       
       if (category_existed.length === 0) {
-        logger.error(message.DATA_NOT_FOUND_ID);
+        logger.error(`Category ${ message.NOT_FOUND }`);
         return res.status(200).json({
           statusCode: StatusCodes.NOT_FOUND,
           status: responseStatus.RESPONSE_ERROR,
-          message: `Category ${ message.DATA_NOT_FOUND_ID }`,
+          message: `Category ${ message.NOT_FOUND }`,
         });
       }
 
       await db.query('DELETE FROM categories WHERE id = ?', [id]);
 
-      logger.info(message.SUCCESSFULLY_DELETED);
+      logger.info(`Category ${message.DELETE_SUCCESS}`);
       return res.status(200).json({
         statusCode: StatusCodes.OK,
         status: responseStatus.RESPONSE_SUCCESS,
-        message: `Category ${message.SUCCESSFULLY_DELETED}`,
+        message: `Category ${message.DELETE_SUCCESS}`,
       });
-
     } catch (error) {
       logger.error(error.message);
-      return res.status(200).json({
+      return res.status(500).json({
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         status: responseStatus.RESPONSE_ERROR,
         error: error.message,

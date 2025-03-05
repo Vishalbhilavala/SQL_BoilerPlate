@@ -39,7 +39,7 @@ async function sendOTPToEmail(email) {
         subject: "Set New Password ✔",
         text: "We Send a otp Please confirm its you",
         html: `Verify Using This Otp : <b>${otp}</b>
-        <p><b>Note: </b>Otp will expire in 15 Minutes</p>`,
+        <p><b>Note: </b>Otp will expire in 5 Minutes</p>`,
       });
 }  
 
