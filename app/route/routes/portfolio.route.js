@@ -9,7 +9,7 @@ route.post('/commanFileUpload', upload.single('photo'), portfolioRouter.commanFi
 route.get('/getListOfPortfolio', portfolioRouter.getListOfPortfolio)
 route.post('/viewPortfolio/:id', portfolioRouter.viewPortfolio)
 route.put('/updatePortfolio', portfolioRouter.updatePortfolio)
-route.delete('/deletePortfolio', portfolioRouter.deletePortfolio)
+route.delete('/deletePortfolio', portfolioRouter.deletePortfolio )
 
 
 module.exports = route
