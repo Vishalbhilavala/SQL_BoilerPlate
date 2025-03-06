@@ -1,21 +1,20 @@
-const sql = require('mysql2')
-require('dotenv').config()
+const mysql = require('mysql2/promise');
+require('dotenv').config();
+const logger = require('../../app/services/logger');
 const message = require('../utils/message')
-const logger = require('../services/logger')
 
-let connection = sql.createConnection({
-    host: process.env.HOST,
-    user:process.env.USER,
-    password:process.env.PASSWORD,
-    database:process.env.DATABASE
+const pool = mysql.createPool({
+  connectionLimit: 10,
+  host: process.env.HOST,
+  user: process.env.USER,
+  password: process.env.PASSWORD,
+  database: process.env.DATABASE
+});
+
+pool.query('SELECT 1').then(()=>{
+  logger.info(message.DATABASE_CONNECTION)
+}).catch((error)=>{
+  logger.error(message.DATABASE_CONNECTION_ERROR, error)
 })
 
-connection.connect(function (error) {
-    if (error) {
-        logger.error('Error is There');
-    }else{
-        logger.info(message.DATABASE_CONNECTION);
-    }
-})
-
-module.exports = connection
+module.exports = pool;
