@@ -7,14 +7,14 @@ const message = require('../utils/message');
 const { GeneralResponse } = require('../utils/responce');
 const {
   create_testimonial_validate,
-  Testimonial_validID,
+  Testimonial_valid,
 } = require('../validation/testimonialvalidate ');
 const { cli } = require('winston/lib/winston/config');
 
 module.exports = {
   createTestimonial: async (req, res) => {
     try {
-      let { client_name, image_description, image } = req.body;
+      let { client_name, description, image } = req.body;
       const { error } = create_testimonial_validate.validate(req.body);
 
       if (error) {
@@ -26,8 +26,8 @@ module.exports = {
         });
       }
       const [testimonial] = await db.query(
-        'INSERT INTO testimonial(client_name, image_description) VALUES(?, ?)',
-        [client_name, image_description]
+        'INSERT INTO testimonial(client_name, description) VALUES(?, ?)',
+        [client_name, description]
       );
 
       const testimonial_id = testimonial.insertId;
@@ -44,6 +44,7 @@ module.exports = {
         statusCode: StatusCodes.CREATED,
         status: responseStatus.RESPONSE_SUCCESS,
         message: `Testimonial ${message.ADD_SUCCESS}`,
+        testimonial: testimonial_id
       });
     } catch (error) {
       logger.error(error);
@@ -95,11 +96,10 @@ module.exports = {
 
       const show = filteredTestimonial.slice(StartIndex, EndIndex);
 
-      logger.info(`Testimonial ${message.GET_SUCCESS}`);
+      logger.info(show);
       return res.status(200).json({
         statusCode: StatusCodes.OK,
         status: responseStatus.RESPONSE_SUCCESS,
-        message: `Testimonial ${message.GET_SUCCESS}`,
         Testimonial: show,
       });
     } catch (error) {
@@ -129,11 +129,10 @@ module.exports = {
         });
       }
 
-      logger.info(`Testimonial ${message.GET_SUCCESS}`);
+      logger.info(testimonial);
       return res.status(200).json({
         statusCode: StatusCodes.OK,
         status: responseStatus.RESPONSE_SUCCESS,
-        message: `Testimonial ${message.GET_SUCCESS}`,
         testimonial,
       });
     } catch (error) {
@@ -148,8 +147,8 @@ module.exports = {
 
   updateTestimonial: async (req, res) => {
     try {
-      const { id, client_name, image_description } = req.body;
-      const { error } = Testimonial_validID.validate({ id });
+      const { id, client_name, description } = req.body;
+      const { error } = Testimonial_valid.validate(req.body);
 
       if (error) {
         logger.error(error.message);
@@ -181,10 +180,10 @@ module.exports = {
         ]);
       }
 
-      if (image_description) {
+      if (description) {
         await db.query(
-          'UPDATE testimonial SET image_description = ? WHERE id = ?',
-          [image_description, id]
+          'UPDATE testimonial SET description = ? WHERE id = ?',
+          [description, id]
         );
       }
 
@@ -208,7 +207,7 @@ module.exports = {
   deleteTestimonial: async (req, res) => {
     try {
       const { id } = req.body;
-      const { error } = Testimonial_validID.validate(req.body);
+      const { error } = Testimonial_valid.validate(req.body);
 
       if (error) {
         logger.error(error.message);
