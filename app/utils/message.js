@@ -2,7 +2,7 @@ module.exports = {
     DATABASE_CONNECTION: `Database is connected on "${process.env.DATABASE}"`,
     DATABASE_CONNECTION_ERROR: `Error in db connection`,
     ALREADY_EXIST : 'is already exist.',
-    NOT_FOUND: 'not found',
+    NOT_FOUND: 'is not found',
     UPDATED_SUCCESS : 'is updated successfully.',
     GET_SUCCESS : 'is getting successfully.',
     ADD_SUCCESS : 'is added successfully.',
@@ -15,4 +15,5 @@ module.exports = {
     REGISTER_SUCCESS : 'You are registered successfully.',
     CURRENT_PASSWORD_INVALID : 'Your current password is invalid.',
     LOGIN_SUCCESS : 'You are login successfully.',
+    FILE_NOT_FOUND: 'No file uploaded.',
 }

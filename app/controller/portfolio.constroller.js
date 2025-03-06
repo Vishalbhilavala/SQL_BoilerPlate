@@ -51,16 +51,31 @@ module.exports = {
     }
   },
   
-  commanFileUpload: async (req, res) => {
+  commanFileUpload: (req, res) => {
     try {
-      let image = req.file.filename; 
-      return res.send(image)
+      if (!req.file) {
+        return res.status(200).json({
+          statusCode: StatusCodes.BAD_REQUEST,
+          status: responseStatus.RESPONSE_ERROR,
+          message : message.FILE_NOT_FOUND
+        });
+      }
+
+      let image = req.file.filename;
+
+      logger.info(`Image ${message.ADD_SUCCESS}`)
+      return res.status(200).json({
+        statusCode: StatusCodes.OK,
+        status: responseStatus.RESPONSE_SUCCESS,
+        message: `Image ${message.ADD_SUCCESS}`,
+        image_path : image
+      });
     } catch (error) {
-      logger.error(error);
+      logger.error(error.message)
       return res.status(500).json({
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         status: responseStatus.RESPONSE_ERROR,
-        error: error,
+        error: error.message,
       });
     }
   },
@@ -104,6 +119,7 @@ module.exports = {
 
       const show = filteredPortfolio.slice(StartIndex, EndIndex);
       
+      logger.info(`Portfolio ${message.GET_SUCCESS}`)
       return res.status(200).json({
           statusCode:StatusCodes.OK,
           status: responseStatus.RESPONSE_SUCCESS,
@@ -126,7 +142,7 @@ module.exports = {
       const id = req.params.id
       const [portfolio] = await db.query('SELECT portfolio.*, imagies.image_path FROM portfolio LEFT JOIN imagies ON portfolio.id = imagies.portfolio_id WHERE portfolio.id = ? ',[id]); 
       
-      if(!portfolio.length){
+      if(portfolio.length === 0){
         logger.error(`Portfolio ${message.NOT_FOUND}`)
         return res.status(200).json({
           status: responseStatus.RESPONSE_ERROR,
@@ -185,11 +201,11 @@ module.exports = {
         await db.query('UPDATE portfolio SET description = ? WHERE id = ?', [description, id])
       }
 
-      logger.info(`Portfolio ${message.GET_SUCCESS}`);
+      logger.info(`Portfolio ${message.UPDATED_SUCCESS}`);
       return res.status(200).json({
         statusCode: StatusCodes.OK,
         status: responseStatus.RESPONSE_SUCCESS,
-        message: `Portfolio ${message.GET_SUCCESS}`,
+        message: `Portfolio ${message.UPDATED_SUCCESS}`,
       });
     } catch (error) {
       logger.error(error);
