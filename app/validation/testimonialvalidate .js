@@ -10,8 +10,19 @@ const create_testimonial_validate = Joi.object({
     image_description : Joi.string().empty().messages({
       'string.base': 'description must be a string.',
       "string.empty": "image description cannot be empty.",
-    })
-
+    }),
+    image: Joi.string().empty().messages({
+        'string.base': 'image path must be an string.',
+        "string.empty": "image cannot be empty.",
+      }),
 })
 
-module.exports = { create_testimonial_validate}
+const Testimonial_validID = Joi.object({
+  id: Joi.number().integer().empty().required().messages({
+    'number.base': 'id must be an integer.',
+    "number.empty": "id cannot be empty.",
+    'any.required': 'id is required.',
+  }),
+})
+
+module.exports = { create_testimonial_validate, Testimonial_validID}

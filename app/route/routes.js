@@ -7,6 +7,6 @@ const testmonialRouter = require('./routes/testimonial.routes')
 router.use('/api/users', userRouter)
 router.use('/api/category', categoryRouter)
 router.use('/api/portfolio', portfolioRouter)
-router.use('/api/testimonial ', testmonialRouter)
+router.use('/api/testimonial', testmonialRouter)
 
 module.exports = router
