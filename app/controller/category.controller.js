@@ -138,6 +138,7 @@ module.exports = {
 
   updateCategory: async (req, res) => {
     try {
+
       const { id, category_name } = req.body;
       const { error } = create_category_validate.validate({ category_name });
 

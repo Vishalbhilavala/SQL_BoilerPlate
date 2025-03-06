@@ -135,6 +135,7 @@ module.exports = {
   viewProfile: async (req, res) => {
     try {
       const use_id = req.user_data.id;
+      
       const [user] = await db.query('SELECT * FROM user WHERE id = ?', [
         use_id,
       ]);
